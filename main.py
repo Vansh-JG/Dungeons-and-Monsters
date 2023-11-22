@@ -1,68 +1,108 @@
 import check_input
 from hero import Hero
-from enemy import Enemy
 from map import Map
+from beg_factory import BeginnerFactory
+from exp_factory import ExpertFactory
 
-# Vansh Gandhi
+# Vansh J Gandhi
 
-
+# Asks the user for their name and the level of difficulty they want to choose
 name = input("What is your name, traveler? ")
+print("Difficulty:")
+print("1. Beginner")
+print("2. Expert")
+difficulty_lvl = check_input.get_int_range("", 1, 2)
+
+# Makes a Hero object and Map object
 hero = Hero(name)
-map_instance = Map()
-#The loop to ask for choice
-while True:
-  print(map_instance.show_map(hero.location))
+m = Map()
+map_counter = 1
 
-  print("1. North")
-  print("2. South")
-  print("3. East")
-  print("4. West")
+# For easy level:
+if difficulty_lvl == 1:
+    fac = BeginnerFactory()
+# for expert level
+else:
+    fac = ExpertFactory()
 
-  move = check_input.get_int_range("",1,4)
-  if move == 1:
-    location = hero.go_north()
-  elif move == 2:
-    location = hero.go_south()
-  elif move == 3:
-    location = hero.go_east()
-  elif move == 4:
-    location = hero.go_west()
-  else:
-    location = 'o'
+# Checks if the player has health to play further
+while hero.hp > 0:
+    print(hero)
+    m.show_map(hero.location)
+    print("1. North")
+    print("2. South")
+    print("3. East")
+    print("4. West")
+    print("5. Quit")
 
-  #
-  if location == 'm':
-    enemy = Enemy()
-    print(f'You encountered a {enemy._name}')
-    print(f'HP: {enemy._hp}/{enemy._max_hp}')
-    while hero._hp > 0 and enemy._hp > 0:
-      print(f'1. Attack {enemy._name}')
-      print('2. Run Away')
-      choice = check_input.get_int_range(1,2,"")
-      if choice == 1:
-        print(hero.attack(enemy))
-        if enemy._hp <= 0:
-          print(f'{enemy._name} has been defeated!')
-          map_instance.remove_at_loc(hero.location)
-          break
-        print(enemy.attack(hero))
-        if hero._hp <= 0:
-          print('Game Over! You were defeated by the monster.')
-          break
-      elif choice == 2:
-        print('You ran away!')
+    user_choice = check_input.get_int_range("Enter choice: ", 1, 5)
+
+    # Updates the player's location on the map
+    if user_choice == 1:
+        location = hero.go_north(m)
+
+    elif user_choice == 2:
+        location = hero.go_south(m)
+
+    elif user_choice == 3:
+        location = hero.go_east(m)
+
+    elif user_choice == 4:
+        location = hero.go_west(m)
+
+    else:
+        print("Thanks for playing. Goodbye!!!")
         break
-  elif location == 'o':
-    print("You cannot go that way...")
-  elif location == 'n':
-    print("There is nothing here...")
-  elif location == 'i':
-    print("You found a Health Potion! You drink it to restore your health.")
-    hero.heal()
-    map_instance.remove_at_loc(hero.location)
-  elif location == 's':
-    print("You are at the start of the dungeon.")
-  elif location == 'f':
-    print("Congratulations! You found the exit.")
-    print("Game Over")
-    break
+
+    # If the player encounters a monster
+    if location == 'm':
+        enemy = fac.create_random_enemy()
+        print(f'You encountered a {enemy.name}')
+        print(enemy)
+        while hero.hp > 0 and enemy.hp > 0:
+            print(f'1. Attack {enemy.name}')
+            print('2. Run Away')
+            choice = check_input.get_int_range("", 1, 2)
+            if choice == 1:
+                print(hero.attack(enemy))
+                if enemy.hp <= 0:
+                    print(f'{enemy.name} has been defeated!')
+                    m.remove_at_loc(hero.location)
+                    break
+                print(enemy.attack(hero))
+                if hero.hp <= 0:
+                    print('Game Over! You were defeated by the monster.')
+                    break
+            elif choice == 2:
+                print('You ran away!')
+                if user_choice == 1:
+                    hero.go_south(m)
+                elif user_choice == 2:
+                    hero.go_north(m)
+                elif user_choice == 3:
+                    hero.go_west(m)
+                elif user_choice == 4:
+                    hero.go_east(m)
+                break
+
+    # To tell player that it cannot go out the wrong direction.
+    elif location == 'o':
+        print("You cannot go that way...")
+    # If player encounters nothing
+    elif location == 'n':
+        print("There is nothing here...")
+    # When the player drinks the health potion
+    elif location == 'i':
+        print("You found a Health Potion! You drink it to restore your health.")
+        hero.heal()
+        m.remove_at_loc(hero.location)
+    # That is the start position on the map
+    elif location == 's':
+        print("You are at the start of the dungeon.")
+    # That is the finish position
+    elif location == 'f':
+        print("Congratulations! You found the exit and has been promoted to the next level.")
+        map_counter += 1
+        if map_counter == 4:
+            map_counter = 1
+        m.load_map(map_counter)

@@ -1,43 +1,51 @@
-import entity
 import random
-class Hero(entity.Entity):
+from entity import Entity
+
+
+class Hero(Entity):
     def __init__(self, name):
         super().__init__(name, max_hp=25)
-        self.location = (0, 0)
+        self._loc = [0, 0]
+
+    @property
+    def location(self):
+        return self._loc
+
     def attack(self, entity):
         damage = random.randint(2, 5)
         entity.take_damage(damage)
-        return f"{self._name} attacks a {entity._name} for {damage} damage!"
-    # To go North
-    def go_north(self):
-        new_loc = (self.location[0] - 1, self.location[1])
-        if new_loc[0] >= 0 and new_loc[1] <= 0:
-            self.location = new_loc
-            return self.location
-        else:
-            return 'o'
-        # To go South
-    def go_south(self):
-        new_loc = (self.location[0] + 1, self.location[1])
-        if new_loc[0] >= 0 and new_loc[1] <= 0:
-            self.location = new_loc
-            return self.location
-        else:
-            return 'o'
-        # To go East
-    def go_east(self):
-        new_loc = (self.location[0], self.location[1] + 1)
-        if new_loc[0] >= 0 and new_loc[1] <= 0:
-            self.location = new_loc
-            return self.location
-        else:
-            return 'o'
-        # To go West
+        return str(f"{self._name} attacks a {entity.name} for {damage} damage.")
 
-    def go_west(self):
-        new_loc = (self.location[0], self.location[1] - 1)
-        if new_loc[0] >= 0 and new_loc[1] <= 0:
-            self.location = new_loc
-            return self.location
-        else:
-            return 'o'
+    def go_north(self, map_instance):
+        map_instance.reveal(self._loc)
+        self._loc[0] -= 1
+        if self._loc[0] < 0:
+            self._loc[0] = 0
+            return "o"
+
+        return map_instance[self._loc[0]][self._loc[1]]
+
+    def go_south(self, map_instance):
+        map_instance.reveal(self._loc)
+        self._loc[0] += 1
+        if self._loc[0] > (len(map_instance) - 1):
+            self._loc[0] = len(map_instance) - 1
+            return "o"
+
+        return map_instance[self._loc[0]][self._loc[1]]
+
+    def go_east(self, map_instance):
+        map_instance.reveal(self._loc)
+        self._loc[1] += 1
+        if self._loc[1] > len(map_instance[self._loc[0]]) - 1:
+            self._loc[1] = len(map_instance[self._loc[0]]) - 1
+            return "o"
+        return map_instance[self._loc[0]][self._loc[1]]
+
+    def go_west(self, map_instance):
+        map_instance.reveal(self._loc)
+        self._loc[1] -= 1
+        if self._loc[1] < 0:
+            self._loc[1] = 0
+            return "o"
+        return map_instance[self._loc[0]][self._loc[1]]
