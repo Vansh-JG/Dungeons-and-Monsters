@@ -5,7 +5,7 @@ from beg_factory import BeginnerFactory
 from exp_factory import ExpertFactory
 
 # Vansh J Gandhi
-
+# OOP
 # Asks the user for their name and the level of difficulty they want to choose
 name = input("What is your name, traveler? ")
 print("Difficulty:")
